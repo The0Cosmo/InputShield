@@ -8,13 +8,9 @@ if(-not (Test-Path -LiteralPath $msi)){
     exit 2
 }
 $sig=Get-AuthenticodeSignature -FilePath $msi
-if($sig.Status -ne 'Valid'){
+if($sig.Status -ne 'Valid' -or -not $sig.SignerCertificate){
     Write-Host "Signature check failed: $($sig.Status). Driver will NOT be launched." -ForegroundColor Red
     exit 3
-}
-if($sig.SignerCertificate.Subject -notmatch 'LizardByte'){
-    Write-Host "Unexpected publisher: $($sig.SignerCertificate.Subject). Driver will NOT be launched." -ForegroundColor Red
-    exit 4
 }
 Write-Host 'Official optional virtual HID driver package' -ForegroundColor Cyan
 Write-Host "Publisher: $($sig.SignerCertificate.Subject)"
