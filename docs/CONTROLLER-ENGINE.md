@@ -1,39 +1,54 @@
-# Controller engine: design and safety notes
+# Controller engine and provider notes
 
-## Goal
+## Current application functionality
 
-InputShield is intended to support a physical controller (for example, Nintendo Switch Pro Controller over USB or Bluetooth) as an input source and optionally expose a remapped virtual Xbox-compatible controller to games.
+The Controller Studio currently saves an editable mapping profile:
+- Switch B/A/Y/X labels to Xbox A/B/X/Y labels;
+- stick dead zone;
+- sensitivity scalar;
+- right-stick Y inversion;
+- optional game executable path.
 
-The desired pipeline is:
+These settings are stored as local JSON. The current preview does not read live controller button/axis reports and does not emit a virtual gamepad. The UI explicitly marks virtual output as unavailable.
 
-1. Discover physical HID/game-controller devices and show their connection state.
-2. Read supported controller reports without claiming exclusive access by default.
-3. Apply a user-editable mapping (buttons, triggers, sticks, dead zones, sensitivity, inversion).
-4. Send the mapped state to a virtual gamepad provider.
-5. Let the user test buttons and axes, save per-game profiles, and stop output immediately.
+## Required architecture
 
-## Important distinction
+A working Switch-to-Xbox path needs:
+1. HID input enumeration and report reading for the physical controller (USB and Bluetooth tested separately).
+2. Input normalization for buttons, triggers and sticks.
+3. Mapping application and dead-zone/sensitivity processing.
+4. A virtual gamepad provider that publishes a Windows device games can enumerate.
+5. Disconnect handling, a global stop, duplicate-device warnings, rumble/output feedback support where available.
+6. Tests with Windows Game Controller, Gamepad API, DirectInput and XInput games.
 
-Changing button labels in the UI is not enough to make a game see an Xbox controller. The final step requires a virtual-device provider/driver that Windows and games can enumerate. This is a separate system component, may require administrator approval, and must be installed and tested independently of the InputShield UI.
+Changing button labels in a profile is not itself controller emulation.
 
-## Driver/provider evaluation
+## Provider evaluation
 
-- **ViGEmBus**: supports Xbox 360 and DualShock 4 emulation, but its upstream repository is archived/retired. Do not silently bundle it as if it were actively maintained. See https://github.com/nefarius/ViGEmBus.
-- **libvirtualhid / Virtual HID Driver (LizardByte)**: a newer option described by its authors for virtual gamepads, including Xbox and Nintendo Switch-style devices. The Windows driver is distributed separately and has its own source-available licensing terms. Review the exact license, redistribution terms, signing status, supported Windows versions, and installation flow before bundling anything. See https://app.lizardbyte.dev/2026-08-16-introducing-libvirtualhid-and-virtual-hid-driver/.
+The project currently tracks LizardByte's `libvirtualhid` as a candidate:
+- Its public library API describes generic HID, Xbox, DualShock, DualSense and Nintendo Switch Pro-style profiles.
+- Windows uses a separate UMDF2/VHF driver package.
+- The current Windows release package targets AMD64; Windows ARM64 release packages are not available in the reviewed documentation.
+- The generated Windows driver package artifacts are under LizardByte Source-Available License 1.0. The product documentation also states that a machine license is required for driver-backed virtual devices.
+- Its driver package is not a dependency that InputShield can silently bundle as MIT software.
 
-InputShield must not download drivers at runtime. Offline packages must contain only components whose redistribution is explicitly permitted, with their original notices and hashes.
+Official references:
+- https://github.com/LizardByte/libvirtualhid
+- https://docs.lizardbyte.dev/projects/libvirtualhid/latest/md_docs_2windows-driver.html
+- https://app.lizardbyte.dev/libvirtualhid/virtual-hid-driver/
+
+ViGEmBus is an older alternative whose upstream project is archived/retired. It should not be treated as the actively maintained default.
 
 ## Safety requirements
 
 - Never install a driver silently.
-- Show the provider name, publisher/signature status, version, architecture, and license before installation.
-- Require explicit user confirmation before launching a driver installer.
-- Do not disable Windows driver-signature enforcement or enable test-signing mode.
-- Provide a visible stop control and a global emergency stop.
-- Avoid hiding the physical controller until virtual output has been verified.
-- Detect and warn about duplicate physical + virtual inputs that can cause double input.
-- Do not promise anti-cheat compatibility; some games may reject virtual devices.
+- Require a valid package signature and show publisher details before installation.
+- Do not disable driver-signature enforcement or enable test-signing mode.
+- Do not hide the physical controller until virtual output has been verified.
+- Stop and destroy virtual devices cleanly on disconnect or application exit.
+- Warn that anti-cheat compatibility is game-specific and not guaranteed.
+- Keep the default profile editor useful without installing any third-party driver.
 
-## Implementation status
+## Status
 
-This document describes the target architecture, not completed functionality. The current PowerShell prototype does not read controller reports and does not create virtual controllers. No Switch-to-Xbox conversion is currently implemented.
+The device inventory and mapping profile editor are implemented in the preview. The HID report reader and virtual-device backend remain future development. No functional Switch-to-Xbox emulation is claimed yet.
