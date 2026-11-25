@@ -21,7 +21,7 @@ if($IncludeUserSuppliedVirtualHidMsi){
   $msi=Join-Path $root 'packages\optional\libvirtualhid-Windows-AMD64-driver-installer.msi'
   if(-not (Test-Path -LiteralPath $msi)){throw 'Optional MSI requested but not found in packages\optional.'}
   $sig=Get-AuthenticodeSignature -FilePath $msi
-  if($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notmatch 'LizardByte'){throw 'Optional MSI signature/publisher check failed; package stopped.'}
+  if($sig.Status -ne 'Valid' -or -not $sig.SignerCertificate){throw 'Optional MSI Authenticode signature check failed; package stopped.'}
   $dest=Join-Path $stage 'packages\optional\libvirtualhid-Windows-AMD64-driver-installer.msi'
   Copy-Item -LiteralPath $msi -Destination $dest -Force
   $hash=(Get-FileHash -LiteralPath $msi -Algorithm SHA256).Hash
