@@ -1,44 +1,52 @@
 # InputShield
 
-InputShield is an experimental Windows input-blocking utility written in PowerShell/C#.
+InputShield is an independent Windows input-management project. The goal is a polished desktop application for input-device diagnostics, per-game profiles, keyboard/mouse controls, and controller remapping.
 
-> **Status: prototype — not production-ready.** Do not rely on it for security, accessibility-critical use, or isolation of background applications.
+> **Current status: experimental prototype.** The repository is public, but the current executable source is not a production-ready input-isolation engine and no finished offline installer has been released.
 
-## Current implementation
+## Product goals
 
-- Lists visible top-level windows.
-- Installs low-level Windows keyboard/mouse hooks.
-- Suppresses selected input events only while the chosen window is the foreground window.
-- F12 emergency stop; manual stop; hooks are removed when the UI closes.
+- A modern Windows desktop interface with a dashboard, sidebar navigation, light/dark themes, device cards, profiles, diagnostics, and activity logs.
+- Keyboard/mouse controls and clearly scoped per-window/process input experiments.
+- Controller discovery and live diagnostics for supported gamepads.
+- Editable controller mappings, including Nintendo Switch Pro Controller to virtual Xbox-compatible output.
+- Per-game profiles, dead-zone/sensitivity settings, button testing, and emergency stop.
+- Offline-first distribution: one self-contained application bundle with checksums and no runtime downloads.
 
-## Critical limitations
+## What works in the current prototype
 
-This implementation does **not** provide per-process input routing. It does not intercept or isolate Raw Input, DirectInput, XInput, HID, or controller devices. It cannot guarantee that a background game instance will not receive mouse/keyboard input. It is not a replacement for HidHide, Nucleus Co-op Proto Input, or a properly engineered virtual-device/driver solution.
+The existing PowerShell 5.1 prototype:
+- lists visible top-level windows;
+- installs low-level Windows keyboard/mouse hooks;
+- suppresses selected input events only while the chosen window is in the foreground;
+- provides F12 emergency stop and removes hooks when the UI closes.
 
-The current source has not completed Windows compatibility, reliability, accessibility, or security testing. No signed driver or production installer is provided. Use only on a test machine and review the code before running it.
-
-## Run the prototype
-
-Requires Windows PowerShell 5.1 and Windows Forms (included with Windows):
+Run it with:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\src\InputShield.ps1
 ```
 
-F12 is the emergency stop while the selected target window is in the foreground. Closing the application also removes the hooks.
+## What does not work yet
 
-## Development roadmap
+The current prototype does **not** isolate Raw Input, DirectInput, XInput, HID, or background-game input. It does not read Switch controller reports and does not create a virtual Xbox controller. The Switch-to-Xbox feature is a development target, not an available feature.
 
-1. Define and test the supported input-isolation scenarios.
-2. Prototype device/process routing and evaluate Windows Raw Input behavior.
-3. Add automated Windows tests and repeatable packaging.
-4. Conduct security and accessibility review.
-5. Sign and publish a production installer only after validation.
+A virtual Xbox controller requires a separate virtual-device provider/driver. That component has its own licensing, signing, Windows compatibility, and installation requirements. InputShield will not silently install drivers, disable driver-signature enforcement, or claim compatibility that has not been tested.
 
-## Contributing
+See:
+- [Controller engine design and driver evaluation](docs/CONTROLLER-ENGINE.md)
+- [Offline distribution and installation plan](docs/OFFLINE-DISTRIBUTION.md)
+- [Security policy](SECURITY.md)
+- [Contributing](CONTRIBUTING.md)
 
-Bug reports and reproducible test cases are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
+## Development priorities
+
+1. Replace the prototype UI with the modern desktop interface.
+2. Build a reliable controller discovery and diagnostics layer.
+3. Implement mapping and virtual-device output using a reviewed, legally redistributable provider.
+4. Redesign keyboard/mouse isolation around tested Windows input-routing behavior.
+5. Build and test the offline installer on clean Windows 10/11 x64 systems.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT for InputShield's own code. Third-party components retain their own licenses and notices.
