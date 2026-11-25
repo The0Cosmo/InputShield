@@ -1,4 +1,4 @@
-name: Windows source validation
+name: Windows validation and offline package
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  validate-powershell:
+  validate-and-package:
     runs-on: windows-latest
     steps:
       - name: Checkout
@@ -40,7 +40,8 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $source = Get-Content -Raw '.\src\InputShield.App.ps1'
-          $match = [regex]::Match($source, "(?s)\[xml\]\$xaml=@'\r?\n(.*?)\r?\n'@")
+          $pattern = '\[xml\]\$xaml=@''\r?\n(.*?)\r?\n''@'
+          $match = [regex]::Match($source, $pattern)
           if (-not $match.Success) { throw 'Could not locate embedded XAML block.' }
           $xml = New-Object System.Xml.XmlDocument
           $xml.LoadXml($match.Groups[1].Value)
@@ -54,10 +55,30 @@ jobs:
             'Uninstall-InputShield.ps1',
             'Install-InputShield.cmd',
             'Build-Offline-Package.ps1',
+            'Install-Optional-VirtualHID.ps1',
             'src\InputShield.App.ps1',
-            'src\InputShield.ps1'
+            'src\InputShield.ps1',
+            'packages\optional\README.txt'
           )
           foreach ($path in $required) {
             if (-not (Test-Path -LiteralPath $path)) { throw "Missing package file: $path" }
           }
           Write-Host 'Offline installer payload is complete.'
+
+      - name: Build offline ZIP
+        shell: powershell
+        run: |
+          .\Build-Offline-Package.ps1
+          if (-not (Test-Path '.\release\InputShield-0.3.0-preview-Windows-x64-Offline.zip')) {
+            throw 'Offline ZIP was not generated.'
+          }
+
+      - name: Upload offline package
+        uses: actions/upload-artifact@v4
+        with:
+          name: InputShield-0.3.0-preview-Windows-x64-Offline
+          path: |
+            release/InputShield-0.3.0-preview-Windows-x64-Offline.zip
+            release/InputShield-0.3.0-preview-Windows-x64-Offline.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
