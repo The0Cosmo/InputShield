@@ -1,0 +1,63 @@
+name: Windows source validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-powershell:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse PowerShell sources
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $scripts = Get-ChildItem -Path . -Recurse -File -Filter '*.ps1'
+          foreach ($script in $scripts) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $script.FullName,
+              [ref]$tokens,
+              [ref]$errors
+            ) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | Format-List | Out-String | Write-Error
+            }
+            Write-Host "Parsed $($script.FullName)"
+          }
+
+      - name: Validate embedded WPF XAML
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Get-Content -Raw '.\src\InputShield.App.ps1'
+          $match = [regex]::Match($source, "(?s)\[xml\]\$xaml=@'\r?\n(.*?)\r?\n'@")
+          if (-not $match.Success) { throw 'Could not locate embedded XAML block.' }
+          $xml = New-Object System.Xml.XmlDocument
+          $xml.LoadXml($match.Groups[1].Value)
+          Write-Host 'Embedded WPF XAML is well-formed XML.'
+
+      - name: Check offline installer payload
+        shell: pwsh
+        run: |
+          $required = @(
+            'Install-InputShield.ps1',
+            'Uninstall-InputShield.ps1',
+            'Install-InputShield.cmd',
+            'Build-Offline-Package.ps1',
+            'src\InputShield.App.ps1',
+            'src\InputShield.ps1'
+          )
+          foreach ($path in $required) {
+            if (-not (Test-Path -LiteralPath $path)) { throw "Missing package file: $path" }
+          }
+          Write-Host 'Offline installer payload is complete.'
