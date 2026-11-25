@@ -143,7 +143,8 @@ function Get-MappingFromUI{
 }
 function Set-MappingUI($mapping){
     if(-not $mapping){$mapping=[pscustomobject]@{switchB='A';switchA='B';switchY='X';switchX='Y';deadZone=0.12;sensitivity=1.0;invertY=$false}}
-    foreach($pair in @(@('MapB','switchB'),@('MapA','switchA'),@('MapY','switchY'),@('MapX','switchX'))){$combo=C $pair[0];$val=[string]$mapping.($pair[1]);$found=$null;foreach($entry in $combo.Items){if([string]$entry.Content -eq $val){$found=$entry;break}};if($found){$combo.SelectedItem=$found}else{$combo.SelectedIndex=0}}
+    $values=@{MapB=[string]$mapping.switchB;MapA=[string]$mapping.switchA;MapY=[string]$mapping.switchY;MapX=[string]$mapping.switchX}
+    foreach($controlName in $values.Keys){$combo=C $controlName;$val=$values[$controlName];$found=$null;foreach($entry in $combo.Items){if([string]$entry.Content -eq $val){$found=$entry;break}};if($found){$combo.SelectedItem=$found}else{$combo.SelectedIndex=0}}
     (C 'DeadZone').Text=([string]$mapping.deadZone).Replace(',','.')
     (C 'Sensitivity').Value=[double]$mapping.sensitivity
     (C 'InvertY').IsChecked=[bool]$mapping.invertY
