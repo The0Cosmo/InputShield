@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Path $script:ProfileRoot,$script:LogRoot -Force | 
 <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="228"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
 <Border x:Name="Sidebar" Grid.Column="0" Background="#17271F"><DockPanel Margin="17">
  <StackPanel DockPanel.Dock="Top" Margin="4,12,4,28"><TextBlock Text="◈ INPUTSHIELD" Foreground="#F0FFF4" FontSize="20" FontWeight="Bold"/><TextBlock Text="INPUT CONTROL CENTER" Foreground="#91CBA6" FontSize="9" Margin="2,6,0,0"/></StackPanel>
- <StackPanel DockPanel.Dock="Bottom" Margin="4,0,4,8"><Border Background="#294333" CornerRadius="10" Padding="12"><StackPanel><TextBlock Text="LOCAL & OFFLINE" Foreground="#A9E6BC" FontWeight="Bold" FontSize="10"/><TextBlock Text="Profiles stay on this PC" Foreground="White" Margin="0,5,0,0" FontSize="11"/></StackPanel></Border><TextBlock Text="InputShield 0.3 · Preview" Foreground="#8BA394" FontSize="10" Margin="2,12,0,0"/></StackPanel>
+ <StackPanel DockPanel.Dock="Bottom" Margin="4,0,4,8"><Border Background="#294333" CornerRadius="10" Padding="12"><StackPanel><TextBlock Text="LOCAL &amp; OFFLINE" Foreground="#A9E6BC" FontWeight="Bold" FontSize="10"/><TextBlock Text="Profiles stay on this PC" Foreground="White" Margin="0,5,0,0" FontSize="11"/></StackPanel></Border><TextBlock Text="InputShield 0.3 · Preview" Foreground="#8BA394" FontSize="10" Margin="2,12,0,0"/></StackPanel>
  <StackPanel>
   <Button x:Name="NavDashboard" Content="⌂   Overview" Background="#315C43" Foreground="White" HorizontalContentAlignment="Left"/>
   <Button x:Name="NavDevices" Content="▣   Devices" Background="#294333" Foreground="White" HorizontalContentAlignment="Left"/>
