@@ -70,6 +70,10 @@ Official upstream references:
 
 Profiles and logs are stored in `%LOCALAPPDATA%\InputShield`. The uninstaller preserves this data by default.
 
+## Automated validation
+
+GitHub Actions parses all PowerShell scripts, loads the WPF window in a headless Windows PowerShell 5.1 process, checks the offline installer payload and builds the offline ZIP artifact on every push to `main`.
+
 ## Security and license
 
 InputShield's own code is MIT-licensed. Third-party components retain their own licenses. See [SECURITY.md](SECURITY.md), [docs/CONTROLLER-ENGINE.md](docs/CONTROLLER-ENGINE.md), and [docs/OFFLINE-DISTRIBUTION.md](docs/OFFLINE-DISTRIBUTION.md).
