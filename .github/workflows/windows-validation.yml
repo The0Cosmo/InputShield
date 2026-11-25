@@ -40,11 +40,16 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $source = Get-Content -Raw '.\src\InputShield.App.ps1'
-          $pattern = '\[xml\]\$xaml=@''\r?\n(.*?)\r?\n''@'
-          $match = [regex]::Match($source, $pattern)
-          if (-not $match.Success) { throw 'Could not locate embedded XAML block.' }
+          $startMarker = '[xml]$xaml=@' + [char]39
+          $endMarker = [char]39 + '@'
+          $markerAt = $source.IndexOf($startMarker, [StringComparison]::Ordinal)
+          if ($markerAt -lt 0) { throw 'Could not locate XAML start marker.' }
+          $contentStart = $source.IndexOf([char]10, $markerAt) + 1
+          $contentEnd = $source.IndexOf($endMarker, $contentStart, [StringComparison]::Ordinal)
+          if ($contentEnd -lt $contentStart) { throw 'Could not locate XAML end marker.' }
+          $xamlText = $source.Substring($contentStart, $contentEnd - $contentStart)
           $xml = New-Object System.Xml.XmlDocument
-          $xml.LoadXml($match.Groups[1].Value)
+          $xml.LoadXml($xamlText)
           Write-Host 'Embedded WPF XAML is well-formed XML.'
 
       - name: Check offline installer payload
