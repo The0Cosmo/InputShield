@@ -52,6 +52,11 @@ jobs:
           $xml.LoadXml($xamlText)
           Write-Host 'Embedded WPF XAML is well-formed XML.'
 
+      - name: Load WPF UI and verify named controls
+        shell: powershell
+        run: |
+          powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -STA -File .\scripts\Test-WpfUI.ps1
+
       - name: Check offline installer payload
         shell: pwsh
         run: |
