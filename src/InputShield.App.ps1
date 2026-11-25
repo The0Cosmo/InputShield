@@ -135,7 +135,7 @@ function Refresh-Profiles{
     $items=@(Get-ProfileFiles);(C 'ProfileRows').ItemsSource=$items;(C 'CardProfileCount').Text=[string]$items.Count
 }
 function Get-MappingFromUI{
-    $mapB=[string](C 'MapB').Text;$mapA=[string](C 'MapA').Text;$mapY=[string](C 'MapY').Text;$mapX=[string](C 'MapX').Text
+    $mapB=[string](C 'MapB').SelectedItem.Content;$mapA=[string](C 'MapA').SelectedItem.Content;$mapY=[string](C 'MapY').SelectedItem.Content;$mapX=[string](C 'MapX').SelectedItem.Content
     $dz=0.12
     if(-not [double]::TryParse([string](C 'DeadZone').Text,[Globalization.NumberStyles]::Float,[Globalization.CultureInfo]::InvariantCulture,[ref]$dz)){throw 'Dead zone must be a number between 0 and 0.95.'}
     if($dz -lt 0 -or $dz -gt 0.95){throw 'Dead zone must be between 0 and 0.95.'}
@@ -143,7 +143,7 @@ function Get-MappingFromUI{
 }
 function Set-MappingUI($mapping){
     if(-not $mapping){$mapping=[pscustomobject]@{switchB='A';switchA='B';switchY='X';switchX='Y';deadZone=0.12;sensitivity=1.0;invertY=$false}}
-    foreach($pair in @(@('MapB','switchB'),@('MapA','switchA'),@('MapY','switchY'),@('MapX','switchX'))){$combo=C $pair[0];$val=[string]$mapping.($pair[1]);$combo.SelectedValue=$val;if(-not $combo.SelectedValue){$combo.Text=$val}}
+    foreach($pair in @(@('MapB','switchB'),@('MapA','switchA'),@('MapY','switchY'),@('MapX','switchX'))){$combo=C $pair[0];$val=[string]$mapping.($pair[1]);$found=$null;foreach($entry in $combo.Items){if([string]$entry.Content -eq $val){$found=$entry;break}};if($found){$combo.SelectedItem=$found}else{$combo.SelectedIndex=0}}
     (C 'DeadZone').Text=([string]$mapping.deadZone).Replace(',','.')
     (C 'Sensitivity').Value=[double]$mapping.sensitivity
     (C 'InvertY').IsChecked=[bool]$mapping.invertY
