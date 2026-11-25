@@ -9,7 +9,7 @@ $out=Join-Path $root 'release'
 $zip=Join-Path $out ("InputShield-"+$version+"-Windows-x64-Offline.zip")
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
 New-Item -ItemType Directory -Path $out -Force | Out-Null
-$files=@('README.md','LICENSE','SECURITY.md','CONTRIBUTING.md','Install-InputShield.ps1','Uninstall-InputShield.ps1','Install-InputShield.cmd','Install-Optional-VirtualHID.ps1','Launch-InputShield.cmd','src\InputShield.App.ps1','src\InputShield.ps1','docs\CONTROLLER-ENGINE.md','docs\OFFLINE-DISTRIBUTION.md','packages\optional\README.txt')
+$files=@('README.md','LICENSE','SECURITY.md','CONTRIBUTING.md','Install-InputShield.ps1','Install-InputShield.cmd','Uninstall-InputShield.ps1','Install-InputShield.cmd','Install-Optional-VirtualHID.ps1','Launch-InputShield.cmd','src\InputShield.App.ps1','src\InputShield.ps1','docs\CONTROLLER-ENGINE.md','docs\OFFLINE-DISTRIBUTION.md','packages\optional\README.txt')
 foreach($relative in $files){
   $source=Join-Path $root $relative
   if(-not (Test-Path -LiteralPath $source)){throw "Required project file missing: $relative"}
