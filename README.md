@@ -15,7 +15,9 @@ InputShield is an independent Windows input-management project. The goal is a po
 
 ## What works in the current prototype
 
-The existing PowerShell 5.1 prototype:
+A first modern WPF desktop UI shell is available in `src/InputShield.Modern.ps1`, launched with `Launch-InputShield.cmd`. It includes navigation, dashboard cards, a Windows Plug and Play device inventory scan, and a controller-mapping preview. The profile, keyboard/mouse, and settings sections are placeholders; the mapping preview is illustrative and does not yet emit a virtual controller.
+
+The original PowerShell 5.1 input-hook prototype remains available in `src/InputShield.ps1`:
 - lists visible top-level windows;
 - installs low-level Windows keyboard/mouse hooks;
 - suppresses selected input events only while the chosen window is in the foreground;
