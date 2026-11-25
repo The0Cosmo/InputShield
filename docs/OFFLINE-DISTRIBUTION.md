@@ -1,35 +1,38 @@
 # Offline distribution and installation
 
-## Distribution goal
+## Application package
 
-Provide one downloadable offline bundle for supported Windows PCs. The bundle should include the InputShield application, documentation, license notices, checksums, and any approved runtime files. The application must not need an internet connection after installation.
+The current build provides a PowerShell 5.1/WPF application and a per-user installer. The UI runtime uses Windows components; it does not need separate .NET or VC++ redistributables on the supported Windows target.
 
-## Two installation layers
+Create the ZIP on a Windows PC:
 
-### 1. InputShield application
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Offline-Package.ps1
+```
 
-The application installer should:
-- install per-user by default (no administrator rights);
-- create and remove a Start Menu shortcut;
-- keep profiles and settings under the current user's local application-data folder;
-- include all application runtime dependencies;
-- offer an uninstall action;
-- never fetch components from the internet.
+Output:
+- `release\InputShield-0.3.0-preview-Windows-x64-Offline.zip`
+- `release\InputShield-0.3.0-preview-Windows-x64-Offline.zip.sha256`
 
-### 2. Optional virtual-controller provider
+On the offline computer, extract the ZIP and run `Install-InputShield.cmd`. The installer copies the application to `%LOCALAPPDATA%\Programs\InputShield`, creates Start Menu shortcuts and needs no administrator rights. Profiles and logs are stored in `%LOCALAPPDATA%\InputShield`, separate from application files. Uninstalling preserves user data by default.
 
-Virtual gamepad output is not part of the ordinary UI installation. If a provider is selected and its redistribution terms permit inclusion:
-- ship its official installer and original license/third-party notices;
-- verify its SHA-256 before offering installation;
-- explain that a driver installation may require administrator approval and a Windows restart;
-- require explicit confirmation and let the provider's signed installer perform the installation.
+## Optional virtual HID driver
 
-If no provider is installed, InputShield may still offer device discovery, diagnostics, profile editing, and mapping previews, but it must clearly label virtual Xbox output as unavailable.
+The default ZIP deliberately excludes third-party driver binaries. The official LizardByte Windows driver package is separately licensed; the Windows driver artifacts use the LizardByte Source-Available License 1.0 and machine licensing is required for driver-backed virtual devices. See the official project and product documentation before obtaining or including it.
 
-## Offline build workflow
+For a personal offline package only, the user may place an officially obtained MSI at `packages\optional\libvirtualhid-Windows-AMD64-driver-installer.msi` and pass `-IncludeUserSuppliedVirtualHidMsi` to the build script. The script requires a valid Authenticode signature and copies it into that private ZIP. The optional launch script displays the signer and requires explicit confirmation before invoking the MSI with UAC.
 
-The release pipeline should produce architecture-specific packages (initial target: Windows 10/11 x64), generate SHA-256 checksums, and test installation on a clean Windows VM with networking disabled. Do not label a package production-ready until clean-machine installation, uninstall, upgrade, device-disconnect, and emergency-stop tests pass.
+Do not redistribute the driver MSI unless its license and purchase terms explicitly authorize it. The current InputShield preview does not yet integrate the libvirtualhid API, so installing the driver alone does not create a virtual Xbox gamepad in InputShield.
 
-## Current status
+## Release validation required
 
-The repository currently contains a PowerShell 5.1 prototype, not a compiled installer. This document is a packaging specification and does not claim that an offline installer has already been built or tested.
+Before calling this a production installer, test on clean, disconnected Windows 11 x64 systems:
+- application install, launch and uninstall;
+- profile create, save, import, export and delete;
+- log/report export;
+- reconnecting and disconnecting controllers;
+- MSI signature verification and provider license activation (if used);
+- app updates and rollback;
+- accessibility, scaling and high-DPI display.
+
+This repository's current installer is a per-user PowerShell installer, not a signed MSI or EXE installer.
